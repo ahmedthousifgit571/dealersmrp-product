@@ -1,0 +1,170 @@
+// ElectroPrice — product price database.
+// Models and relationships follow the master spec (§4). Fields marked "+" are additive
+// extensions documented in CLAUDE.md (barcodes, de-duplication, audit trail, resumable reviews).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  STAFF
+}
+
+enum PriceSource {
+  INVOICE_OCR
+  EXCEL_BULK
+  MANUAL
+}
+
+enum ScanStatus {
+  UPLOADED
+  EXTRACTING
+  PENDING_REVIEW
+  COMMITTED
+  FAILED
+  DISCARDED
+}
+
+model User {
+  id             String    @id @default(cuid())
+  name           String
+  email          String    @unique
+  passwordHash   String
+  role           Role      @default(STAFF)
+  isActive       Boolean   @default(true) // +
+  sessionVersion Int       @default(0) // + bump to revoke every session of this user
+  failedLogins   Int       @default(0) // +
+  lockedUntil    DateTime? // +
+  lastLoginAt    DateTime? // +
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt // +
+
+  priceChanges   PriceHistory[]
+  uploadedScans  InvoiceScanLog[] @relation("ScanUploadedBy")
+  committedScans InvoiceScanLog[] @relation("ScanCommittedBy")
+}
+
+model Product {
+  id            String    @id @default(cuid())
+  skuCode       String    @unique // Auto-generated e.g. "ELEC-1001"
+  barcode       String?   @unique // + factory EAN / UPC printed on the box
+  name          String // Normalized name e.g. "WH STROM2 18 Inch Black"
+  brand         String?
+  modelNumber   String?
+  modelKey      String? // + modelNumber upper-cased, letters and digits only (duplicate detection)
+  category      String? // +
+  hsnCode       String?
+  dealerPrice   Decimal   @db.Decimal(10, 2) // Net per-unit rate after discounts, EXCLUDING GST
+  mrp           Decimal   @db.Decimal(10, 2) // Retail selling price (GST inclusive, as printed)
+  gstPercentage Decimal   @default(18.0) @db.Decimal(5, 2)
+  stockQty      Int       @default(0)
+  searchText    String    @default("") // + lower-cased name/brand/model/sku/barcode for trigram search
+  archivedAt    DateTime? // + archived products are hidden from search
+  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime  @default(now())
+  priceHistory  PriceHistory[]
+  aliases       ProductAlias[]
+
+  @@index([searchText(ops: raw("gin_trgm_ops"))], type: Gin, map: "Product_searchText_trgm_idx")
+  @@index([brand, modelKey])
+  @@index([archivedAt, updatedAt])
+}
+
+// Maps messy supplier invoice descriptions to clean master products
+model ProductAlias {
+  id           String   @id @default(cuid())
+  aliasName    String // Exact string from supplier invoice e.g. "WH STROM2 18\" Black"
+  aliasKey     String   @unique // + normalized aliasName (case, spacing, punctuation folded)
+  supplierName String? // +
+  productId    String
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now()) // +
+
+  @@index([productId])
+}
+
+model PriceHistory {
+  id             String          @id @default(cuid())
+  productId      String
+  product        Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  oldDealerPrice Decimal?        @db.Decimal(10, 2)
+  newDealerPrice Decimal         @db.Decimal(10, 2)
+  oldMrp         Decimal?        @db.Decimal(10, 2)
+  newMrp         Decimal         @db.Decimal(10, 2)
+  supplierName   String?
+  invoiceNumber  String?
+  source         PriceSource
+  note           String? // +
+  changedById    String? // +
+  changedBy      User?           @relation(fields: [changedById], references: [id], onDelete: SetNull)
+  invoiceScanId  String? // +
+  invoiceScan    InvoiceScanLog? @relation(fields: [invoiceScanId], references: [id], onDelete: SetNull)
+  changedAt      DateTime        @default(now())
+
+  @@index([productId, changedAt])
+  @@index([changedAt])
+}
+
+model InvoiceScanLog {
+  id            String     @id @default(cuid())
+  supplierName  String?
+  supplierGstin String?
+  invoiceNumber String?
+  invoiceDate   DateTime?
+  totalAmount   Decimal?   @db.Decimal(12, 2)
+  rawJson       Json? // Untouched AI output (null until extraction finishes)
+  reviewJson    Json? // + admin's autosaved review draft; final rows at commit
+  status        ScanStatus @default(UPLOADED)
+  aiModel       String? // +
+  isMock        Boolean    @default(false) // + extracted by the demo extractor
+  error         String? // +
+  lineCount     Int        @default(0) // +
+  uploadedById  String? // +
+  uploadedBy    User?      @relation("ScanUploadedBy", fields: [uploadedById], references: [id], onDelete: SetNull)
+  committedById String? // +
+  committedBy   User?      @relation("ScanCommittedBy", fields: [committedById], references: [id], onDelete: SetNull)
+  committedAt   DateTime? // +
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt // +
+
+  files        InvoiceFile[]
+  priceChanges PriceHistory[]
+
+  @@index([status, createdAt])
+}
+
+// + Uploaded invoice pages (compressed images or one PDF), kept for the side-by-side review.
+model InvoiceFile {
+  id        String         @id @default(cuid())
+  scanId    String
+  scan      InvoiceScanLog @relation(fields: [scanId], references: [id], onDelete: Cascade)
+  fileName  String
+  mimeType  String
+  size      Int
+  data      Bytes? // null once purged
+  pageOrder Int            @default(0)
+  purgedAt  DateTime?
+  createdAt DateTime       @default(now())
+
+  @@index([scanId, pageOrder])
+}
+
+// + Single-row application settings (id = "app").
+model AppSetting {
+  id                         String   @id @default("app")
+  businessName               String   @default("ElectroPrice")
+  staffCanSeeDealerPrice     Boolean  @default(true)
+  skuPrefix                  String   @default("ELEC")
+  nextSkuNumber              Int      @default(1001)
+  defaultGst                 Decimal  @default(18.0) @db.Decimal(5, 2)
+  mrpMarkupPct               Decimal? @db.Decimal(5, 2)
+  addInvoiceQtyToStock       Boolean  @default(false)
+  purgeInvoiceFilesAfterDays Int      @default(90)
+  updatedAt                  DateTime @updatedAt
+}

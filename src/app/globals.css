@@ -1,0 +1,472 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-soft: var(--warning-soft);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-info-soft: var(--info-soft);
+  --color-surface: var(--surface);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-geist-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Clay elevation scale. Values swap per theme below; ring utilities still compose on top. */
+  --shadow-clay-sm: var(--elev-clay-sm);
+  --shadow-clay: var(--elev-clay);
+  --shadow-clay-lg: var(--elev-clay-lg);
+  --shadow-well: var(--elev-well);
+  --shadow-press: var(--elev-press);
+  --shadow-glow: var(--elev-glow);
+  --shadow-jelly: var(--elev-jelly);
+}
+
+/*
+ * ElectroPrice: claymorphism with a liquid touch.
+ * Porcelain-blue ground, soft puffy surfaces lit from the top, orange as the one
+ * action colour, teal / blue / gold as supporting liquids. Light is the default.
+ */
+:root {
+  --radius: 0.8rem;
+
+  --background: oklch(0.966 0.011 236);
+  --foreground: oklch(0.24 0.035 258);
+  --surface: oklch(0.952 0.013 238);
+  --card: oklch(0.995 0.003 236);
+  --card-foreground: oklch(0.24 0.035 258);
+  --popover: oklch(0.993 0.004 236);
+  --popover-foreground: oklch(0.24 0.035 258);
+  --primary: oklch(0.645 0.19 43);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.955 0.012 238);
+  --secondary-foreground: oklch(0.3 0.04 258);
+  --muted: oklch(0.946 0.013 238);
+  --muted-foreground: oklch(0.5 0.032 255);
+  --accent: oklch(0.948 0.038 192);
+  --accent-foreground: oklch(0.43 0.09 196);
+  --destructive: oklch(0.585 0.22 25);
+  --border: oklch(0.905 0.014 242);
+  --input: oklch(0.885 0.016 242);
+  --ring: oklch(0.7 0.17 50);
+
+  --success: oklch(0.64 0.15 160);
+  --success-foreground: oklch(0.46 0.11 162);
+  --success-soft: oklch(0.952 0.045 162);
+  --warning: oklch(0.79 0.16 76);
+  --warning-foreground: oklch(0.5 0.13 56);
+  --warning-soft: oklch(0.963 0.05 86);
+  --info: oklch(0.61 0.17 250);
+  --info-foreground: oklch(0.47 0.16 257);
+  --info-soft: oklch(0.952 0.032 248);
+
+  --chart-1: oklch(0.68 0.19 45);
+  --chart-2: oklch(0.66 0.12 192);
+  --chart-3: oklch(0.8 0.15 78);
+  --chart-4: oklch(0.62 0.16 252);
+  --chart-5: oklch(0.62 0.18 305);
+
+  --viz-dealer: #ee6c2b;
+  --viz-mrp: #0f9f97;
+  --viz-invoice: #ee6c2b;
+  --viz-excel: #18a9a0;
+  --viz-manual: #4b8df0;
+
+  --sidebar: oklch(0.993 0.004 236);
+  --sidebar-foreground: oklch(0.34 0.035 258);
+  --sidebar-primary: oklch(0.645 0.19 43);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.955 0.016 236);
+  --sidebar-accent-foreground: oklch(0.24 0.035 258);
+  --sidebar-border: oklch(0.925 0.012 240);
+  --sidebar-ring: oklch(0.7 0.17 50);
+
+  /* Clay: a white lip on top, a soft shade underneath, and a wide diffuse drop. */
+  --clay-edge: oklch(1 0 0 / 0.8);
+  --well-edge: oklch(0.88 0.016 242 / 0.7);
+  --field: oklch(0.975 0.007 236);
+  --fill-clay: linear-gradient(180deg, oklch(1 0 0) 0%, oklch(0.985 0.006 236) 100%);
+  --fill-well: oklch(0.948 0.012 238);
+  --fill-primary: linear-gradient(180deg, oklch(0.75 0.16 58) 0%, oklch(0.64 0.195 42) 100%);
+  --elev-clay-sm:
+    inset 0 1px 0 oklch(1 0 0 / 0.9),
+    inset 0 -1px 2px oklch(0.5 0.04 245 / 0.07),
+    0 1px 2px oklch(0.4 0.05 250 / 0.06),
+    0 4px 10px -4px oklch(0.45 0.06 250 / 0.16);
+  --elev-clay:
+    inset 0 1.5px 0 oklch(1 0 0 / 0.95),
+    inset 0 -3px 8px oklch(0.55 0.05 240 / 0.06),
+    0 2px 4px -1px oklch(0.4 0.05 250 / 0.05),
+    0 14px 30px -12px oklch(0.42 0.07 250 / 0.2);
+  --elev-clay-lg:
+    inset 0 1.5px 0 oklch(1 0 0 / 0.95),
+    inset 0 -3px 10px oklch(0.55 0.05 240 / 0.07),
+    0 4px 8px -2px oklch(0.4 0.05 250 / 0.06),
+    0 26px 50px -18px oklch(0.42 0.08 250 / 0.3);
+  --elev-well:
+    inset 0 2px 5px oklch(0.45 0.05 245 / 0.09),
+    inset 0 -1px 0 oklch(1 0 0 / 0.85),
+    0 1px 0 oklch(1 0 0 / 0.6);
+  --elev-press:
+    inset 0 3px 7px oklch(0.4 0.1 40 / 0.32),
+    inset 0 -1px 0 oklch(1 0 0 / 0.2);
+  --elev-glow:
+    inset 0 1px 0 oklch(1 0 0 / 0.45),
+    inset 0 -3px 6px oklch(0.45 0.16 35 / 0.3),
+    0 2px 4px -1px oklch(0.55 0.18 40 / 0.3),
+    0 10px 22px -8px oklch(0.64 0.2 42 / 0.55);
+  --elev-jelly:
+    inset 0 1px 0 oklch(1 0 0 / 0.7),
+    0 1px 2px oklch(0.4 0.05 250 / 0.08);
+
+  /* Liquid ground: an orange pool top-right, a teal pool bottom-left. */
+  --liquid-backdrop:
+    radial-gradient(52rem 34rem at 108% -12%, oklch(0.85 0.11 58 / 0.55), transparent 62%),
+    radial-gradient(46rem 34rem at -12% 112%, oklch(0.84 0.085 190 / 0.6), transparent 62%),
+    radial-gradient(40rem 28rem at 55% 40%, oklch(0.94 0.03 240 / 0.7), transparent 70%);
+
+  /* Sidebar foot: three layered waves (mist, teal, orange). */
+  --sidebar-waves: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 150' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='m' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23d5f3ef'/%3E%3Cstop offset='1' stop-color='%23a9e3dc'/%3E%3C/linearGradient%3E%3ClinearGradient id='t' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2363d3c8'/%3E%3Cstop offset='1' stop-color='%23129096'/%3E%3C/linearGradient%3E%3ClinearGradient id='o' x1='0' y1='0' x2='1' y2='0'%3E%3Cstop offset='0' stop-color='%23ffbb73'/%3E%3Cstop offset='1' stop-color='%23f0681f'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M0 34C48 8 92 62 150 42S222 14 240 22V150H0Z' fill='url(%23m)' opacity='.7'/%3E%3Cpath d='M0 70C58 34 112 104 172 74S226 52 240 60V150H0Z' fill='url(%23t)' opacity='.9'/%3E%3Cpath d='M0 112C52 90 118 138 180 110S232 100 240 104V150H0Z' fill='url(%23o)'/%3E%3C/svg%3E");
+}
+
+.dark {
+  --background: oklch(0.175 0.022 258);
+  --foreground: oklch(0.95 0.008 240);
+  --surface: oklch(0.205 0.022 258);
+  --card: oklch(0.225 0.024 258);
+  --card-foreground: oklch(0.95 0.008 240);
+  --popover: oklch(0.235 0.024 258);
+  --popover-foreground: oklch(0.95 0.008 240);
+  --primary: oklch(0.72 0.18 50);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.27 0.024 258);
+  --secondary-foreground: oklch(0.95 0.008 240);
+  --muted: oklch(0.26 0.022 258);
+  --muted-foreground: oklch(0.7 0.025 248);
+  --accent: oklch(0.7 0.12 192 / 16%);
+  --accent-foreground: oklch(0.85 0.09 190);
+  --destructive: oklch(0.7 0.19 22);
+  --border: oklch(1 0 0 / 8%);
+  --input: oklch(1 0 0 / 12%);
+  --ring: oklch(0.72 0.18 50);
+
+  --success: oklch(0.76 0.16 162);
+  --success-foreground: oklch(0.84 0.13 164);
+  --success-soft: oklch(0.7 0.15 162 / 14%);
+  --warning: oklch(0.83 0.16 82);
+  --warning-foreground: oklch(0.87 0.14 88);
+  --warning-soft: oklch(0.78 0.16 76 / 14%);
+  --info: oklch(0.72 0.15 250);
+  --info-foreground: oklch(0.82 0.1 250);
+  --info-soft: oklch(0.65 0.17 252 / 16%);
+
+  --chart-1: oklch(0.74 0.17 52);
+  --chart-2: oklch(0.74 0.12 190);
+  --chart-3: oklch(0.84 0.15 84);
+  --chart-4: oklch(0.72 0.14 252);
+  --chart-5: oklch(0.72 0.16 305);
+
+  --viz-dealer: #f7904a;
+  --viz-mrp: #3cc9be;
+  --viz-invoice: #f7904a;
+  --viz-excel: #3cc9be;
+  --viz-manual: #78a9f7;
+
+  --sidebar: oklch(0.215 0.024 258);
+  --sidebar-foreground: oklch(0.86 0.015 245);
+  --sidebar-primary: oklch(0.72 0.18 50);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(1 0 0 / 6%);
+  --sidebar-accent-foreground: oklch(0.95 0.008 240);
+  --sidebar-border: oklch(1 0 0 / 8%);
+  --sidebar-ring: oklch(0.72 0.18 50);
+
+  --clay-edge: oklch(1 0 0 / 0.07);
+  --well-edge: oklch(1 0 0 / 0.05);
+  --field: oklch(0.19 0.02 258);
+  --fill-clay: linear-gradient(180deg, oklch(0.245 0.025 258) 0%, oklch(0.218 0.023 258) 100%);
+  --fill-well: oklch(0.19 0.02 258);
+  --fill-primary: linear-gradient(180deg, oklch(0.76 0.16 58) 0%, oklch(0.64 0.19 42) 100%);
+  --elev-clay-sm:
+    inset 0 1px 0 oklch(1 0 0 / 0.06),
+    inset 0 -1px 2px oklch(0 0 0 / 0.25),
+    0 1px 2px oklch(0 0 0 / 0.3),
+    0 4px 10px -4px oklch(0 0 0 / 0.45);
+  --elev-clay:
+    inset 0 1px 0 oklch(1 0 0 / 0.07),
+    inset 0 -3px 8px oklch(0 0 0 / 0.2),
+    0 2px 4px -1px oklch(0 0 0 / 0.3),
+    0 16px 34px -12px oklch(0 0 0 / 0.6);
+  --elev-clay-lg:
+    inset 0 1px 0 oklch(1 0 0 / 0.08),
+    inset 0 -3px 10px oklch(0 0 0 / 0.22),
+    0 4px 8px -2px oklch(0 0 0 / 0.35),
+    0 28px 54px -18px oklch(0 0 0 / 0.7);
+  --elev-well:
+    inset 0 2px 6px oklch(0 0 0 / 0.35),
+    inset 0 -1px 0 oklch(1 0 0 / 0.04);
+  --elev-press:
+    inset 0 3px 7px oklch(0.25 0.1 40 / 0.45),
+    inset 0 -1px 0 oklch(1 0 0 / 0.12);
+  --elev-glow:
+    inset 0 1px 0 oklch(1 0 0 / 0.35),
+    inset 0 -3px 6px oklch(0.4 0.15 35 / 0.35),
+    0 2px 4px -1px oklch(0 0 0 / 0.35),
+    0 10px 24px -8px oklch(0.66 0.2 45 / 0.45);
+  --elev-jelly:
+    inset 0 1px 0 oklch(1 0 0 / 0.08),
+    0 1px 2px oklch(0 0 0 / 0.3);
+
+  --liquid-backdrop:
+    radial-gradient(52rem 34rem at 108% -12%, oklch(0.52 0.14 48 / 0.28), transparent 62%),
+    radial-gradient(46rem 34rem at -12% 112%, oklch(0.5 0.1 195 / 0.3), transparent 62%);
+
+  --sidebar-waves: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 150' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='m' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23234a55'/%3E%3Cstop offset='1' stop-color='%231c3b46'/%3E%3C/linearGradient%3E%3ClinearGradient id='t' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23238e8a'/%3E%3Cstop offset='1' stop-color='%23105e66'/%3E%3C/linearGradient%3E%3ClinearGradient id='o' x1='0' y1='0' x2='1' y2='0'%3E%3Cstop offset='0' stop-color='%23d98a45'/%3E%3Cstop offset='1' stop-color='%23c2541a'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M0 34C48 8 92 62 150 42S222 14 240 22V150H0Z' fill='url(%23m)' opacity='.7'/%3E%3Cpath d='M0 70C58 34 112 104 172 74S226 52 240 60V150H0Z' fill='url(%23t)' opacity='.85'/%3E%3Cpath d='M0 112C52 90 118 138 180 110S232 100 240 104V150H0Z' fill='url(%23o)' opacity='.9'/%3E%3C/svg%3E");
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "cv11", "ss01";
+  }
+  /* The liquid ground sits on a fixed layer so it stays put while content scrolls. */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: var(--liquid-backdrop);
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+  /* Prices, SKUs, GSTINs: fixed-width digits so columns line up. */
+  .font-mono {
+    font-variant-numeric: tabular-nums slashed-zero;
+  }
+}
+
+/* ─── Clay surfaces ─────────────────────────────────────────────────────────
+ * Border width and colour are set separately (never the `border` shorthand) so
+ * `border-dashed` and hover border colours in markup still apply.
+ */
+
+/* Raised panel: cards, tables, sections. */
+@utility clay-card {
+  background: var(--fill-clay);
+  border-width: 1px;
+  border-color: var(--clay-edge);
+  @apply shadow-clay;
+}
+
+/* Smaller raised control: outline buttons, chips, pills. */
+@utility clay-raised {
+  background: var(--fill-clay);
+  border-width: 1px;
+  border-color: var(--clay-edge);
+  @apply shadow-clay-sm;
+}
+
+/* Recessed tray: nested panels, empty states, read-only values. */
+@utility clay-well {
+  background: var(--fill-well);
+  border-width: 1px;
+  border-color: var(--well-edge);
+  @apply shadow-well;
+}
+
+/* Text fields: pressed into the surface. */
+@utility clay-input {
+  background: var(--field);
+  border-width: 1px;
+  border-color: var(--input);
+  @apply shadow-well;
+}
+
+/* The one action colour, as glossy orange clay. */
+@utility clay-primary {
+  background: var(--fill-primary);
+  color: var(--primary-foreground);
+  border-color: oklch(0.62 0.18 42 / 0.35);
+  text-shadow: 0 1px 1px oklch(0.42 0.14 35 / 0.35);
+  @apply shadow-glow;
+}
+
+/* Frosted liquid glass for floating chrome. Set --glass-alpha for a denser pane over busy content. */
+@utility glass {
+  background: color-mix(in oklch, var(--card) var(--glass-alpha, 62%), transparent);
+  /* Unprefixed only: Lightning CSS adds -webkit- itself, and keeps just the last of the pair if both are written. */
+  backdrop-filter: blur(20px) saturate(1.7);
+}
+
+/* Floating sidebar panel with the liquid waves at its foot. */
+@utility sidebar-clay {
+  background:
+    var(--sidebar-waves) bottom / 100% 9.5rem no-repeat,
+    var(--fill-clay);
+  border-width: 1px;
+  border-color: var(--clay-edge);
+  @apply shadow-clay-lg;
+}
+
+/* Glossy liquid sphere for icons. Colour comes from a tone-* class. */
+@utility orb {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: oklch(1 0 0);
+  background:
+    radial-gradient(circle at 32% 24%, oklch(1 0 0 / 0.55) 0, oklch(1 0 0 / 0) 42%),
+    linear-gradient(160deg, var(--orb-from), var(--orb-to));
+  box-shadow:
+    inset 0 2px 2px oklch(1 0 0 / 0.4),
+    inset 0 -3px 6px oklch(0 0 0 / 0.14),
+    0 7px 14px -5px var(--orb-glow);
+}
+
+/* Tinted clay tile (stat tiles). Colour comes from a tone-* class. */
+@utility clay-tint {
+  background: var(--tile-fill);
+  border-width: 1px;
+  border-color: var(--clay-edge);
+  @apply shadow-clay;
+}
+
+@layer components {
+  .text-price {
+    @apply font-mono font-semibold tracking-tight tabular-nums;
+  }
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Liquid tones: set the orb and tile colours used by `orb` and `clay-tint`. */
+  .tone-orange {
+    --orb-from: oklch(0.82 0.14 64);
+    --orb-to: oklch(0.65 0.2 40);
+    --orb-glow: oklch(0.66 0.2 42 / 0.55);
+    --tile-fill: linear-gradient(135deg, oklch(0.94 0.055 62) 0%, oklch(0.985 0.015 70) 100%);
+  }
+  .tone-teal {
+    --orb-from: oklch(0.8 0.11 185);
+    --orb-to: oklch(0.56 0.1 200);
+    --orb-glow: oklch(0.6 0.1 195 / 0.5);
+    --tile-fill: linear-gradient(135deg, oklch(0.93 0.05 188) 0%, oklch(0.985 0.012 200) 100%);
+  }
+  .tone-blue {
+    --orb-from: oklch(0.78 0.12 238);
+    --orb-to: oklch(0.56 0.18 258);
+    --orb-glow: oklch(0.6 0.17 255 / 0.5);
+    --tile-fill: linear-gradient(135deg, oklch(0.93 0.045 240) 0%, oklch(0.985 0.012 240) 100%);
+  }
+  .tone-gold {
+    --orb-from: oklch(0.88 0.14 92);
+    --orb-to: oklch(0.72 0.16 68);
+    --orb-glow: oklch(0.74 0.16 72 / 0.55);
+    --tile-fill: linear-gradient(135deg, oklch(0.945 0.06 88) 0%, oklch(0.99 0.015 95) 100%);
+  }
+  .dark .tone-orange {
+    --tile-fill: linear-gradient(135deg, oklch(0.34 0.07 50) 0%, oklch(0.235 0.03 258) 100%);
+  }
+  .dark .tone-teal {
+    --tile-fill: linear-gradient(135deg, oklch(0.32 0.055 195) 0%, oklch(0.235 0.03 258) 100%);
+  }
+  .dark .tone-blue {
+    --tile-fill: linear-gradient(135deg, oklch(0.32 0.07 255) 0%, oklch(0.235 0.03 258) 100%);
+  }
+  .dark .tone-gold {
+    --tile-fill: linear-gradient(135deg, oklch(0.34 0.06 80) 0%, oklch(0.235 0.03 258) 100%);
+  }
+
+  /* Login brand panel: deep teal liquid with waves rising from the bottom. */
+  .liquid-panel {
+    background:
+      radial-gradient(38rem 26rem at 0% 0%, oklch(0.62 0.11 190 / 0.55), transparent 65%),
+      radial-gradient(30rem 24rem at 100% 100%, oklch(0.7 0.17 50 / 0.35), transparent 65%),
+      linear-gradient(155deg, oklch(0.42 0.085 205) 0%, oklch(0.3 0.06 222) 100%);
+  }
+  .liquid-waves {
+    background: var(--sidebar-waves) bottom / 100% 100% no-repeat;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Printing: only the page content. */
+@media print {
+  [data-slot="sidebar-gap"],
+  [data-slot="sidebar-container"],
+  [data-slot="sidebar-rail"],
+  [data-sonner-toaster],
+  nextjs-portal {
+    display: none !important;
+  }
+  body {
+    background: white !important;
+  }
+  body::before {
+    display: none;
+  }
+}
