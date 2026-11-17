@@ -66,6 +66,8 @@ model Product {
   stockQty      Int       @default(0)
   searchText    String    @default("") // + lower-cased name/brand/model/sku/barcode for trigram search
   archivedAt    DateTime? // + archived products are hidden from search
+  imageAt       DateTime? // set when a photo exists (also the cache-buster for /api/products/[id]/image)
+  image         ProductImage?
   updatedAt     DateTime  @updatedAt
   createdAt     DateTime  @default(now())
   priceHistory  PriceHistory[]
@@ -74,6 +76,16 @@ model Product {
   @@index([searchText(ops: raw("gin_trgm_ops"))], type: Gin, map: "Product_searchText_trgm_idx")
   @@index([brand, modelKey])
   @@index([archivedAt, updatedAt])
+}
+
+// Product photo, compressed in the browser (~800px JPEG). Kept apart so list queries never load the bytes.
+model ProductImage {
+  productId String   @id
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  mimeType  String
+  data      Bytes
+  size      Int
+  updatedAt DateTime @updatedAt
 }
 
 // Maps messy supplier invoice descriptions to clean master products

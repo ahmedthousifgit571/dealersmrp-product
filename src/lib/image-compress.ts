@@ -3,6 +3,8 @@
 const MAX_EDGE = 2400;
 const TARGET_BYTES = 3.6 * 1024 * 1024;
 
+type Options = { maxEdge?: number; targetBytes?: number };
+
 async function decode(file: File): Promise<ImageBitmap | HTMLImageElement> {
   try {
     return await createImageBitmap(file, { imageOrientation: "from-image" });
@@ -22,7 +24,7 @@ async function decode(file: File): Promise<ImageBitmap | HTMLImageElement> {
 }
 
 /** Returns a JPEG no larger than ~3.6 MB, or the original file if it can't be decoded here (e.g. HEIC on Chrome). */
-export async function compressImage(file: File): Promise<File> {
+export async function compressImage(file: File, { maxEdge = MAX_EDGE, targetBytes = TARGET_BYTES }: Options = {}): Promise<File> {
   let source: ImageBitmap | HTMLImageElement;
   try {
     source = await decode(file);
@@ -31,7 +33,7 @@ export async function compressImage(file: File): Promise<File> {
   }
   const width = "naturalWidth" in source ? source.naturalWidth : source.width;
   const height = "naturalHeight" in source ? source.naturalHeight : source.height;
-  const scale = Math.min(1, MAX_EDGE / Math.max(width, height));
+  const scale = Math.min(1, maxEdge / Math.max(width, height));
   const canvas = document.createElement("canvas");
   canvas.width = Math.round(width * scale);
   canvas.height = Math.round(height * scale);
@@ -44,7 +46,7 @@ export async function compressImage(file: File): Promise<File> {
 
   for (const quality of [0.85, 0.75, 0.62]) {
     const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", quality));
-    if (blob && (blob.size <= TARGET_BYTES || quality === 0.62)) {
+    if (blob && (blob.size <= targetBytes || quality === 0.62)) {
       const name = file.name.replace(/\.[^.]+$/, "") || "invoice";
       return new File([blob], `${name}.jpg`, { type: "image/jpeg", lastModified: Date.now() });
     }

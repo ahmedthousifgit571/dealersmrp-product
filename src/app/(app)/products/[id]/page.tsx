@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ArrowLeft, ArrowRight, Boxes, CalendarClock, FileScan, Quote } from "lucide-react";
 import { ProductActions } from "@/components/products/product-actions";
+import { PhotoUploader } from "@/components/products/photo-uploader";
+import { ProductPhoto } from "@/components/products/product-photo";
 import { PriceChart } from "@/components/products/price-chart";
 import { SourceBadge } from "@/components/products/source-badge";
 import { AliasList } from "@/components/products/alias-list";
@@ -61,97 +63,101 @@ async function ProductData({ params }: { params: Promise<{ id: string }> }) {
 
   return (
     <>
-      {/* Header */}
-      <section className="clay-card flex flex-col gap-4 rounded-2xl p-5 md:flex-row md:items-start md:justify-between md:p-6">
-        <div className="min-w-0 space-y-2">
-          <div className="flex flex-wrap items-center gap-2">
-            <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-              {[p.brand, p.modelNumber].filter(Boolean).join(" · ") || "Unbranded"}
-            </p>
-            {p.category ? <Badge variant="muted">{p.category}</Badge> : null}
-            {p.archivedAt ? <Badge variant="warning">Archived · hidden from search</Badge> : null}
-          </div>
-          <h1 className="text-xl leading-snug font-semibold tracking-tight text-balance md:text-2xl">{p.name}</h1>
-          <dl className="flex flex-wrap gap-x-5 gap-y-1 text-sm">
-            <div className="flex gap-1.5">
-              <dt className="text-muted-foreground">SKU</dt>
-              <dd className="font-mono">{p.skuCode}</dd>
-            </div>
-            {p.barcode ? (
-              <div className="flex gap-1.5">
-                <dt className="text-muted-foreground">Barcode</dt>
-                <dd className="font-mono">{p.barcode}</dd>
-              </div>
-            ) : null}
-            {p.hsnCode ? (
-              <div className="flex gap-1.5">
-                <dt className="text-muted-foreground">HSN</dt>
-                <dd className="font-mono">{p.hsnCode}</dd>
-              </div>
-            ) : null}
-          </dl>
-        </div>
+      {/* Header: photo + name */}
+      <section className="clay-card flex flex-col items-center gap-5 rounded-2xl p-5 text-center sm:flex-row sm:items-start sm:text-left md:p-6">
         {isAdmin ? (
-          <ProductActions
-            archived={!!p.archivedAt}
-            product={{ id: p.id, name: p.name, skuCode: p.skuCode, gstPct: p.gstPct, dealerPrice: p.dealerPrice, mrp: p.mrp }}
-          />
+          <PhotoUploader id={p.id} imageAt={p.imageAt} name={p.name} />
+        ) : (
+          <ProductPhoto id={p.id} imageAt={p.imageAt} name={p.name} className="size-36 md:size-44" />
+        )}
+        <div className="flex min-w-0 flex-1 flex-col gap-3 sm:self-stretch">
+          <div className="space-y-2">
+            <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
+              <p className="text-sm font-medium tracking-wide text-muted-foreground uppercase">
+                {[p.brand, p.modelNumber].filter(Boolean).join(" · ") || "Unbranded"}
+              </p>
+              {p.category ? <Badge variant="muted">{p.category}</Badge> : null}
+              {p.archivedAt ? <Badge variant="warning">Archived · hidden from search</Badge> : null}
+            </div>
+            <h1 className="text-2xl leading-snug font-semibold tracking-tight text-balance md:text-3xl">{p.name}</h1>
+            <dl className="flex flex-wrap justify-center gap-x-5 gap-y-1 text-sm sm:justify-start">
+              <div className="flex gap-1.5">
+                <dt className="text-muted-foreground">Code</dt>
+                <dd className="font-mono">{p.skuCode}</dd>
+              </div>
+              {p.barcode ? (
+                <div className="flex gap-1.5">
+                  <dt className="text-muted-foreground">Barcode</dt>
+                  <dd className="font-mono">{p.barcode}</dd>
+                </div>
+              ) : null}
+              {p.hsnCode ? (
+                <div className="flex gap-1.5">
+                  <dt className="text-muted-foreground">HSN</dt>
+                  <dd className="font-mono">{p.hsnCode}</dd>
+                </div>
+              ) : null}
+            </dl>
+          </div>
+          {isAdmin ? (
+            <div className="mt-auto flex justify-center sm:justify-start">
+              <ProductActions
+                archived={!!p.archivedAt}
+                product={{ id: p.id, name: p.name, skuCode: p.skuCode, gstPct: p.gstPct, dealerPrice: p.dealerPrice, mrp: p.mrp }}
+              />
+            </div>
+          ) : null}
+        </div>
+      </section>
+
+      {/* The answer: dealer price first, as large as it gets */}
+      <section className={cn("grid gap-4", canSeeDealer && "sm:grid-cols-2")}>
+        {canSeeDealer ? (
+          <div className="clay-tint tone-orange rounded-2xl p-5 ring-2 ring-primary/40 md:p-6">
+            <p className="text-base font-bold tracking-wide text-primary uppercase">Dealer Price</p>
+            <p className="text-sm text-muted-foreground">What we pay, before GST</p>
+            <p className="text-price mt-2 text-5xl leading-none md:text-6xl">{formatINR(p.dealerPrice)}</p>
+          </div>
         ) : null}
+        <div className="clay-tint tone-teal rounded-2xl p-5 md:p-6">
+          <p className="text-base font-bold tracking-wide text-success uppercase">MRP</p>
+          <p className="text-sm text-muted-foreground">Price printed on the box</p>
+          <p className={cn("text-price mt-2 leading-none text-success", canSeeDealer ? "text-4xl md:text-5xl" : "text-5xl md:text-6xl")}>
+            {formatINR(p.mrp)}
+          </p>
+        </div>
       </section>
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
-        {/* Prices */}
         <section className="clay-card rounded-2xl p-5 md:p-6">
-          <h2 className="text-sm font-semibold">Current price</h2>
-          <dl className="mt-4 space-y-4">
-            <div>
-              <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">MRP</dt>
-              <dd className="text-price text-4xl text-success">{formatINR(p.mrp)}</dd>
-            </div>
+          <h2 className="text-base font-semibold">More details</h2>
+          <dl className="mt-4 space-y-3 text-base">
             {canSeeDealer ? (
-              <div className="grid grid-cols-2 gap-4 border-t pt-4">
-                <div>
-                  <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Dealer · ex GST</dt>
-                  <dd className="text-price text-xl">{formatINR(p.dealerPrice)}</dd>
-                </div>
-                <div>
-                  <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Landing · +{p.gstPct}%</dt>
-                  <dd className="text-price text-xl text-muted-foreground">{formatINR(p.landing)}</dd>
-                </div>
-                <div>
-                  <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Margin</dt>
-                  <dd className="text-price text-xl">{p.margin !== null ? `${p.margin.toFixed(1)}%` : "—"}</dd>
-                </div>
-                <div>
-                  <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Profit / unit</dt>
-                  <dd className="text-price text-xl">{formatINR(p.mrp - p.landing)}</dd>
-                </div>
-              </div>
+              <>
+                <Row label={`Dealer price with GST (+${p.gstPct}%)`} value={formatINR(p.landing)} />
+                <Row label="Our profit per piece" value={formatINR(p.mrp - p.landing)} />
+                <Row label="Margin" value={p.margin !== null ? `${p.margin.toFixed(1)}%` : "—"} />
+              </>
             ) : (
-              <div className="border-t pt-4">
-                <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">GST</dt>
-                <dd className="text-price text-xl">{p.gstPct}%</dd>
-              </div>
+              <Row label="GST" value={`${p.gstPct}%`} />
             )}
-            <div className="space-y-2 border-t pt-4 text-sm">
-              <div className="flex items-center justify-between gap-3">
-                <dt className="flex items-center gap-2 text-muted-foreground">
-                  <Boxes className="size-4" /> Stock
-                </dt>
-                <dd className={cn("font-mono font-medium", p.stockQty <= 0 ? "text-destructive" : p.stockQty <= 3 ? "text-warning-foreground" : "")}>
-                  {p.stockQty <= 0 ? "Out of stock" : `${p.stockQty} units`}
-                </dd>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <dt className="flex items-center gap-2 text-muted-foreground">
-                  <CalendarClock className="size-4" /> Last change
-                </dt>
-                <dd suppressHydrationWarning>{p.history[0] ? timeAgo(p.history[0].at, now) : "—"}</dd>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <dt className="text-muted-foreground">Added</dt>
-                <dd>{formatDate(p.createdAt)}</dd>
-              </div>
+            <div className="flex items-center justify-between gap-3 border-t pt-3">
+              <dt className="flex items-center gap-2 text-muted-foreground">
+                <Boxes className="size-4" /> Stock
+              </dt>
+              <dd className={cn("font-semibold", p.stockQty <= 0 ? "text-destructive" : p.stockQty <= 3 ? "text-warning-foreground" : "text-success")}>
+                {p.stockQty <= 0 ? "Out of stock" : `${p.stockQty} in stock`}
+              </dd>
+            </div>
+            <div className="flex items-center justify-between gap-3 text-sm">
+              <dt className="flex items-center gap-2 text-muted-foreground">
+                <CalendarClock className="size-4" /> Price last changed
+              </dt>
+              <dd suppressHydrationWarning>{p.history[0] ? timeAgo(p.history[0].at, now) : "—"}</dd>
+            </div>
+            <div className="flex items-center justify-between gap-3 text-sm">
+              <dt className="text-muted-foreground">Added</dt>
+              <dd>{formatDate(p.createdAt)}</dd>
             </div>
           </dl>
         </section>
@@ -242,6 +248,15 @@ async function ProductData({ params }: { params: Promise<{ id: string }> }) {
         </section>
       ) : null}
     </>
+  );
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className="text-price">{value}</dd>
+    </div>
   );
 }
 

@@ -76,3 +76,7 @@ Internal web app for an electronics shop. Staff scan or search a product to see 
     - `bwip-js` must be imported from `bwip-js/browser` for types.
     - dev-browser can't `setInputFiles` from disk; inject a File via `DataTransfer` in `page.evaluate`.
   - The Gemini path is untested until `GEMINI_API_KEY` is set. Check that `GEMINI_MODEL` exists (`ai.models.list()`).
+
+## UI pass (2026-11-17)
+- **Dealer Price is the hero**: biggest figure on `/products/[id]` and in finder cards (orange `clay-tint tone-orange` tile); MRP beside it; GST-inclusive, profit and margin sit in "More details". Staff who can't see dealer price get MRP only. Labels are plain ("What we pay, before GST").
+- **Product photos**: `Product.imageAt` + `ProductImage` table (bytes kept apart so lists never load them). `GET/POST/DELETE /api/products/[id]/image` (POST/DELETE admin only; `?v=imageAt` busts the cache). Browser shrinks to ~900px JPEG (`compressImage` options). `ProductPhoto` shows a placeholder tile when there is none; admins get `PhotoUploader` on the product page. After a schema change, restart `next dev` (it keeps the old Prisma client).

@@ -36,6 +36,7 @@ export type ProductDetail = {
   landing: Paise;
   margin: number | null;
   stockQty: number;
+  imageAt: string | null;
   archivedAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -71,6 +72,7 @@ export async function getProductDetail(id: string): Promise<ProductDetail | null
     landing,
     margin: marginPct(landing, mrp),
     stockQty: p.stockQty,
+    imageAt: p.imageAt?.toISOString() ?? null,
     archivedAt: p.archivedAt?.toISOString() ?? null,
     createdAt: p.createdAt.toISOString(),
     updatedAt: p.updatedAt.toISOString(),

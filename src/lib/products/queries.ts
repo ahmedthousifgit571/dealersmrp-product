@@ -20,6 +20,7 @@ export type ProductHit = {
   dealerPrice: Paise | null;
   landing: Paise | null;
   stockQty: number;
+  imageAt: string | null;
   updatedAt: string;
   match: "exact" | "text" | "fuzzy" | "recent";
   lastChange: {
@@ -49,6 +50,7 @@ type FinderRow = {
   dealerPrice: Decimalish;
   mrp: Decimalish;
   stockQty: number;
+  imageAt: Date | null;
   updatedAt: Date;
   tier: number; // 0 exact code, 1 every word matches, 2 fuzzy, 3 recent
   h_changedAt: Date | null;
@@ -79,6 +81,7 @@ function toHit(r: FinderRow): ProductHit {
     dealerPrice: dealer,
     landing: landingPaise(dealer, gstPct),
     stockQty: r.stockQty,
+    imageAt: r.imageAt?.toISOString() ?? null,
     updatedAt: r.updatedAt.toISOString(),
     match: TIER_MATCH[r.tier] ?? "fuzzy",
     lastChange:
@@ -112,7 +115,7 @@ function escapeLike(token: string): string {
 function finderQuery(tier: Prisma.Sql, where: Prisma.Sql, orderBy: Prisma.Sql, limit: number) {
   return db.$queryRaw<FinderRow[]>`
     SELECT p.id, p."skuCode", p.barcode, p.name, p.brand, p."modelNumber", p.category, p."hsnCode",
-           p."gstPercentage", p."dealerPrice", p.mrp, p."stockQty", p."updatedAt",
+           p."gstPercentage", p."dealerPrice", p.mrp, p."stockQty", p."imageAt", p."updatedAt",
            ${tier} AS tier,
            h."changedAt" AS "h_changedAt", h.source::text AS "h_source",
            h."oldDealerPrice" AS "h_oldDealer", h."newDealerPrice" AS "h_newDealer",

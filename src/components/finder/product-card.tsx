@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowDownRight, ArrowUpRight, Boxes, CheckCircle2, ChevronRight } from "lucide-react";
+import { ProductPhoto } from "@/components/products/product-photo";
 import { Badge } from "@/components/ui/badge";
 import { formatPct, timeAgo } from "@/lib/format";
 import { formatINR } from "@/lib/money";
@@ -45,10 +46,11 @@ export function ProductCard({ product, now }: { product: ProductHit; now: Date }
   return (
     <article
       className={cn(
-        "clay-card group relative rounded-2xl p-4 transition-[box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:shadow-clay-lg md:flex md:items-center md:gap-6 md:p-5 md:pr-10",
+        "clay-card group relative rounded-2xl p-4 transition-[box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:shadow-clay-lg md:flex md:items-center md:gap-5 md:p-5 md:pr-10",
         product.match === "exact" && "ring-2 ring-success/35",
       )}
     >
+      <ProductPhoto id={product.id} imageAt={product.imageAt} name={product.name} className="mb-3 size-20 md:mb-0 md:size-24" />
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <p className="truncate text-xs font-medium tracking-wide text-muted-foreground uppercase">
@@ -86,42 +88,29 @@ export function ProductCard({ product, now }: { product: ProductHit; now: Date }
         </div>
       </div>
 
-      <dl
-        className={cn(
-          "mt-4 grid gap-3 border-t pt-4 md:mt-0 md:shrink-0 md:border-t-0 md:border-l md:pt-0 md:pl-6",
-          dealerVisible ? "grid-cols-3 md:w-[25rem]" : "grid-cols-2 md:w-60",
-        )}
-      >
+      <dl className="mt-4 grid grid-cols-2 gap-3 border-t pt-4 md:mt-0 md:w-80 md:shrink-0 md:border-t-0 md:border-l md:pt-0 md:pl-6">
+        {dealerVisible ? (
+          <div className="clay-tint tone-orange col-span-2 rounded-xl px-3 py-2 ring-2 ring-primary/35">
+            <dt className="text-xs font-bold tracking-wide text-primary uppercase">
+              Dealer Price <span className="font-medium text-muted-foreground normal-case">· before GST</span>
+            </dt>
+            <dd className="text-price text-3xl leading-tight md:text-4xl">{formatINR(product.dealerPrice)}</dd>
+          </div>
+        ) : null}
         <div>
-          <dt className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">MRP</dt>
-          <dd className="text-price mt-0.5 text-2xl text-success md:text-[1.7rem]">{formatINR(product.mrp)}</dd>
+          <dt className="text-xs font-bold tracking-wide text-muted-foreground uppercase">MRP</dt>
+          <dd className={cn("text-price mt-0.5 text-success", dealerVisible ? "text-xl" : "text-3xl")}>{formatINR(product.mrp)}</dd>
         </div>
         {dealerVisible ? (
-          <>
-            <div>
-              <dt className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
-                Dealer <span className="normal-case">ex GST</span>
-              </dt>
-              <dd className="text-price mt-0.5 text-lg md:text-xl">{formatINR(product.dealerPrice)}</dd>
-            </div>
-            <div>
-              <dt className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
-                Landing <span className="normal-case">+{product.gstPct}%</span>
-              </dt>
-              <dd className="text-price mt-0.5 text-lg text-muted-foreground md:text-xl">
-                {formatINR(product.landing)}
-              </dd>
-              {margin !== null ? (
-                <dd className="mt-0.5 text-[11px] text-muted-foreground">
-                  Margin <span className="font-mono">{margin.toFixed(1)}%</span>
-                </dd>
-              ) : null}
-            </div>
-          </>
+          <div>
+            <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">With GST +{product.gstPct}%</dt>
+            <dd className="text-price mt-0.5 text-xl text-muted-foreground">{formatINR(product.landing)}</dd>
+            {margin !== null ? <dd className="text-[11px] text-muted-foreground">Margin {margin.toFixed(1)}%</dd> : null}
+          </div>
         ) : (
           <div>
-            <dt className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">GST</dt>
-            <dd className="text-price mt-0.5 text-lg">{product.gstPct}%</dd>
+            <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">GST</dt>
+            <dd className="text-price mt-0.5 text-xl">{product.gstPct}%</dd>
           </div>
         )}
       </dl>
