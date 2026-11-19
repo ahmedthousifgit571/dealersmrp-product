@@ -52,6 +52,28 @@ export async function confirmInvoice(
   }
 }
 
+/** Discards many unconfirmed invoices at once. Confirmed ones are skipped; staff only touch their own. */
+export async function discardInvoices(scanIds: string[]): Promise<Result<{ discarded: number; skipped: number }>> {
+  const me = await requireUser();
+  const ids = [...new Set(scanIds)].slice(0, 200);
+  if (ids.length === 0) return { ok: false, error: "Select at least one invoice." };
+  const own = me.role === "ADMIN" ? {} : { uploadedById: me.id };
+  const targets = await db.invoiceScanLog.findMany({
+    where: { id: { in: ids }, status: { in: ["UPLOADED", "FAILED", "PENDING_REVIEW"] }, ...own },
+    select: { id: true },
+  });
+  const okIds = targets.map((t) => t.id);
+  if (okIds.length === 0) return { ok: false, error: "None of the selected invoices can be discarded." };
+  const res = await db.invoiceScanLog.updateMany({
+    where: { id: { in: okIds }, status: { in: ["UPLOADED", "FAILED", "PENDING_REVIEW"] } },
+    data: { status: "DISCARDED" },
+  });
+  await db.invoiceFile.updateMany({ where: { scanId: { in: okIds } }, data: { data: null, purgedAt: new Date() } });
+  revalidatePath("/invoices");
+  revalidatePath("/admin");
+  return { ok: true, discarded: res.count, skipped: ids.length - res.count };
+}
+
 /** Discards an unconfirmed invoice and frees its stored images. */
 export async function discardInvoice(scanId: string): Promise<Result> {
   const me = await requireUser();

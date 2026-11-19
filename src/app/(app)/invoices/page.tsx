@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { ChevronRight, FileScan, ScanLine } from "lucide-react";
+import { BulkSelectProvider, RowCheckbox, SelectAllCheckbox } from "@/components/invoices/bulk-select";
 import { ScanStatusBadge } from "@/components/invoices/scan-status";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +25,8 @@ const TABS = [
   { key: "discarded", label: "Discarded", statuses: ["DISCARDED"] as const },
   { key: "all", label: "All", statuses: null },
 ];
+
+const DISCARDABLE: string[] = ["UPLOADED", "FAILED", "PENDING_REVIEW"];
 
 export default function InvoicesPage({ searchParams }: PageProps<"/invoices">) {
   return (
@@ -75,8 +78,10 @@ async function InvoicesData({ searchParams }: { searchParams: Promise<Record<str
   const countFor = (statuses: readonly string[] | null) =>
     counts.filter((c) => !statuses || statuses.includes(c.status)).reduce((s, c) => s + c._count._all, 0);
   const now = new Date();
+  const discardable = new Set(scans.filter((s) => DISCARDABLE.includes(s.status)).map((s) => s.id));
 
   return (
+    <BulkSelectProvider ids={[...discardable]}>
     <div className="space-y-3">
       <nav className="clay-well flex w-fit max-w-full flex-wrap gap-1 rounded-xl p-1" aria-label="Invoice status">
         {TABS.map((t) => (
@@ -115,7 +120,10 @@ async function InvoicesData({ searchParams }: { searchParams: Promise<Record<str
             <Table>
               <TableHeader>
                 <TableRow className="bg-surface/60 hover:bg-surface/60">
-                  <TableHead className="pl-4">Supplier · invoice</TableHead>
+                  <TableHead className="w-10 pl-4">
+                    <SelectAllCheckbox />
+                  </TableHead>
+                  <TableHead>Supplier · invoice</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Lines</TableHead>
                   <TableHead className="text-right">Total</TableHead>
@@ -126,7 +134,10 @@ async function InvoicesData({ searchParams }: { searchParams: Promise<Record<str
               <TableBody>
                 {scans.map((s) => (
                   <TableRow key={s.id} className="relative">
-                    <TableCell className="py-3 pl-4">
+                    <TableCell className="relative z-10 w-10 py-3 pl-4">
+                      <RowCheckbox id={s.id} label={s.supplierName ?? "invoice"} />
+                    </TableCell>
+                    <TableCell className="py-3">
                       <Link href={`/invoices/${s.id}`} className="font-medium after:absolute after:inset-0 hover:text-primary">
                         {s.supplierName ?? (s.status === "PENDING_REVIEW" || s.status === "COMMITTED" ? "Unknown supplier" : "Not read yet")}
                       </Link>
@@ -155,25 +166,33 @@ async function InvoicesData({ searchParams }: { searchParams: Promise<Record<str
           <ul className="space-y-2 md:hidden">
             {scans.map((s) => (
               <li key={s.id}>
-                <Link href={`/invoices/${s.id}`} className="clay-card block rounded-2xl p-3.5 active:shadow-well">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="truncate font-medium">{s.supplierName ?? "Not read yet"}</p>
-                      <p className="font-mono text-xs text-muted-foreground">{s.invoiceNumber ?? `${s._count.files} page(s)`}</p>
+                <div className="clay-card relative flex items-start gap-3 rounded-2xl p-3.5 active:shadow-well">
+                  {discardable.has(s.id) ? (
+                    <div className="relative z-10 pt-0.5">
+                      <RowCheckbox id={s.id} label={s.supplierName ?? "invoice"} />
                     </div>
-                    <ScanStatusBadge status={s.status} />
-                  </div>
-                  <p className="mt-2 text-xs text-muted-foreground" suppressHydrationWarning>
-                    {s.lineCount ? `${s.lineCount} lines · ` : ""}
-                    {s.totalAmount ? `${formatINR(decimalToPaise(s.totalAmount))} · ` : ""}
-                    {timeAgo(s.createdAt, now)}
-                  </p>
-                </Link>
+                  ) : null}
+                  <Link href={`/invoices/${s.id}`} className="block min-w-0 flex-1 after:absolute after:inset-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="truncate font-medium">{s.supplierName ?? "Not read yet"}</p>
+                        <p className="font-mono text-xs text-muted-foreground">{s.invoiceNumber ?? `${s._count.files} page(s)`}</p>
+                      </div>
+                      <ScanStatusBadge status={s.status} />
+                    </div>
+                    <p className="mt-2 text-xs text-muted-foreground" suppressHydrationWarning>
+                      {s.lineCount ? `${s.lineCount} lines · ` : ""}
+                      {s.totalAmount ? `${formatINR(decimalToPaise(s.totalAmount))} · ` : ""}
+                      {timeAgo(s.createdAt, now)}
+                    </p>
+                  </Link>
+                </div>
               </li>
             ))}
           </ul>
         </>
       )}
     </div>
+    </BulkSelectProvider>
   );
 }
